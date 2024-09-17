@@ -17,6 +17,7 @@ import org.springframework.kafka.core.DefaultKafkaProducerFactory;
 import org.springframework.kafka.core.KafkaAdmin;
 import org.springframework.kafka.core.KafkaTemplate;
 import org.springframework.kafka.core.ProducerFactory;
+import org.springframework.kafka.support.serializer.ErrorHandlingDeserializer;
 import org.springframework.kafka.support.serializer.JsonDeserializer;
 import org.springframework.kafka.support.serializer.JsonSerializer;
 
@@ -49,42 +50,41 @@ public class KafkaConfig {
     }
 
     @Bean
-    public ProducerFactory<String, OrderCreatedEvent> producerFactory() {
-        Map<String, Object> props = new HashMap<>();
-        props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
-        props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-        props.put(JsonSerializer.TYPE_MAPPINGS, "orderCreated:com.order.saga.OrderCreatedEvent");
-        return new DefaultKafkaProducerFactory<>(props);
+    public ProducerFactory<String, Object> producerFactory() {
+        Map<String, Object> configProps = new HashMap<>();
+        configProps.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
+        configProps.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
+        configProps.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
+        return new DefaultKafkaProducerFactory<>(configProps);
     }
 
     @Bean
-    public KafkaTemplate<String, OrderCreatedEvent> kafkaTemplate() {
+    public KafkaTemplate<String, Object> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
     }
 
     @Bean
-    public ConsumerFactory<String, OrderCancelledEvent> consumerFactory() {
+    public ConsumerFactory<String, Object> consumerFactory() {
         Map<String, Object> configProps = new HashMap<>();
         configProps.put(ConsumerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
-        configProps.put(JsonDeserializer.TRUSTED_PACKAGES, "*"); // for consumer specific
-        configProps.put(ConsumerConfig.GROUP_ID_CONFIG, "order-group");
+        configProps.put(ConsumerConfig.GROUP_ID_CONFIG, "group_id");
         configProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         configProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
-        configProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        configProps.put(JsonSerializer.TYPE_MAPPINGS, "orderCancelled:com.order.saga.OrderCancelledEvent");
-        return new DefaultKafkaConsumerFactory<>(configProps);
+        configProps.put(JsonDeserializer.TRUSTED_PACKAGES, "*"); // Allow any package
+
+        return new DefaultKafkaConsumerFactory<>(configProps,
+                new StringDeserializer(),
+                new ErrorHandlingDeserializer<>(new JsonDeserializer<>(Object.class, false)));
     }
 
     @Bean
-    public KafkaConsumer<String, OrderCancelledEvent> kafkaConsumer() {
-        return (KafkaConsumer<String, OrderCancelledEvent>) consumerFactory().createConsumer();
+    public KafkaConsumer<String, Object> kafkaConsumer() {
+        return (KafkaConsumer<String, Object>) consumerFactory().createConsumer();
     }
 
     @Bean
-    public ConcurrentKafkaListenerContainerFactory<String, OrderCancelledEvent> kafkaListenerContainerFactory() {
-        ConcurrentKafkaListenerContainerFactory<String, OrderCancelledEvent> factory =
-                new ConcurrentKafkaListenerContainerFactory<>();
+    public ConcurrentKafkaListenerContainerFactory<String, Object> kafkaListenerContainerFactory() {
+        ConcurrentKafkaListenerContainerFactory<String, Object> factory = new ConcurrentKafkaListenerContainerFactory<>();
         factory.setConsumerFactory(consumerFactory());
         return factory;
     }

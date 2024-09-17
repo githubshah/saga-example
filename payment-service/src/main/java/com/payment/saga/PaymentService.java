@@ -1,5 +1,7 @@
 package com.payment.saga;
 
+import com.fasterxml.jackson.databind.ObjectMapper;
+import org.apache.kafka.clients.consumer.ConsumerRecord;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.kafka.annotation.KafkaListener;
@@ -13,7 +15,7 @@ public class PaymentService {
     private PaymentRepository paymentRepository;
 
     @Autowired
-    private KafkaTemplate<String, OrderCancelledEvent> kafkaTemplate;
+    private KafkaTemplate<String, Object> kafkaTemplate;
 
     @Value("${kafka.topic.order-created}")
     private String orderCreatedTopic;
@@ -21,8 +23,12 @@ public class PaymentService {
     @Value("${kafka.topic.order-cancelled}")
     private String orderCancelledTopic;
 
+    @Autowired
+    private ObjectMapper objectMapper;
+
     @KafkaListener(topics = "${kafka.topic.order-created}", groupId = "payment-group")
-    public void handleOrderCreated(OrderCreatedEvent event) {
+    public void handleOrderCreated(Object consumerRecord) {
+        OrderCreatedEvent event = objectMapper.convertValue(((ConsumerRecord<?, ?>) consumerRecord).value(), OrderCreatedEvent.class);
         System.out.println("payment-service:event-consumed : " + event);
         Payment payment = new Payment();
         payment.setOrderId(event.getOrderId());
