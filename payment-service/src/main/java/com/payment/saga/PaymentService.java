@@ -13,7 +13,7 @@ public class PaymentService {
     private PaymentRepository paymentRepository;
 
     @Autowired
-    private KafkaTemplate<String, Object> kafkaTemplate;
+    private KafkaTemplate<String, OrderCancelledEvent> kafkaTemplate;
 
     @Value("${kafka.topic.order-created}")
     private String orderCreatedTopic;
@@ -23,7 +23,7 @@ public class PaymentService {
 
     @KafkaListener(topics = "${kafka.topic.order-created}", groupId = "payment-group")
     public void handleOrderCreated(OrderCreatedEvent event) {
-        System.out.println("event-consumed : "+event);
+        System.out.println("event-consumed : " + event);
         Payment payment = new Payment();
         payment.setOrderId(event.getOrderId());
         payment.setAmount(event.getAmount());

@@ -12,7 +12,7 @@ public class OrderService {
     @Autowired
     private OrderRepository orderRepository;
 
-    @Autowired(required=true)
+    @Autowired(required = true)
     private KafkaTemplate<String, OrderCreatedEvent> kafkaTemplate;
 
     @Value("${kafka.topic.order-created}")
@@ -33,6 +33,7 @@ public class OrderService {
 
     @KafkaListener(topics = "${kafka.topic.order-cancelled}", groupId = "order-group")
     public void handleOrderCancelled(OrderCancelledEvent event) {
+        System.out.println("event-consumed : " + event);
         Orders orders = orderRepository.findById(event.getOrderId()).orElseThrow();
         orders.setStatus("CANCELLED");
         orderRepository.save(orders);

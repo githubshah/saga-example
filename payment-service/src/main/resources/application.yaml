@@ -1,8 +1,7 @@
-server:
-  port: 8081
+server.port: 8081
 spring:
   datasource:
-    url: jdbc:h2:mem:paymentsdb
+    url: jdbc:h2:mem:ordersdb
     driver-class-name: org.h2.Driver
     username: sa
     password:
@@ -16,8 +15,12 @@ spring:
 
 kafka:
   bootstrap-servers: localhost:9092
-  key-serializer: org.apache.kafka.common.serialization.StringSerializer
-  value-serializer: org.apache.kafka.common.serialization.StringSerializer
+  consumer:
+    key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
+    value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+  producer:
+    key-serializer: org.apache.kafka.common.serialization.StringSerializer
+    value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
   topic:
     order-created: order-created
     order-cancelled: order-cancelled
