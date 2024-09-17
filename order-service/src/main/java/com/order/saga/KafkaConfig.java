@@ -54,7 +54,6 @@ public class KafkaConfig {
         props.put(ProducerConfig.BOOTSTRAP_SERVERS_CONFIG, "localhost:9092");
         props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, StringSerializer.class);
         props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, JsonSerializer.class);
-        // Producer configuration in Service A
         props.put(JsonSerializer.TYPE_MAPPINGS, "orderCreated:com.order.saga.OrderCreatedEvent");
         return new DefaultKafkaProducerFactory<>(props);
     }
@@ -62,8 +61,6 @@ public class KafkaConfig {
     @Bean
     public KafkaTemplate<String, OrderCreatedEvent> kafkaTemplate() {
         return new KafkaTemplate<>(producerFactory());
-        //kafkaTemplate.setConsumerFactory(consumerFactory());
-        //return kafkaTemplate;
     }
 
     @Bean
@@ -75,7 +72,6 @@ public class KafkaConfig {
         configProps.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, StringDeserializer.class);
         configProps.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, JsonDeserializer.class);
         configProps.put(ConsumerConfig.AUTO_OFFSET_RESET_CONFIG, "earliest");
-        // Consumer configuration in Service A
         configProps.put(JsonSerializer.TYPE_MAPPINGS, "orderCancelled:com.order.saga.OrderCancelledEvent");
         return new DefaultKafkaConsumerFactory<>(configProps);
     }

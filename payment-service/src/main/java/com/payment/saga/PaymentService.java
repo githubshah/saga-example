@@ -23,7 +23,7 @@ public class PaymentService {
 
     @KafkaListener(topics = "${kafka.topic.order-created}", groupId = "payment-group")
     public void handleOrderCreated(OrderCreatedEvent event) {
-        System.out.println("event-consumed : " + event);
+        System.out.println("payment-service:event-consumed : " + event);
         Payment payment = new Payment();
         payment.setOrderId(event.getOrderId());
         payment.setAmount(event.getAmount());

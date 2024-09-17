@@ -33,7 +33,7 @@ public class OrderService {
 
     @KafkaListener(topics = "${kafka.topic.order-cancelled}", groupId = "order-group")
     public void handleOrderCancelled(OrderCancelledEvent event) {
-        System.out.println("event-consumed : " + event);
+        System.out.println("order-service:event-consumed : " + event);
         Orders orders = orderRepository.findById(event.getOrderId()).orElseThrow();
         orders.setStatus("CANCELLED");
         orderRepository.save(orders);
