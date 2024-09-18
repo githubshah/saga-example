@@ -1,3 +1,4 @@
+KAFKASERVER: localhost:29092
 spring:
   datasource:
     url: jdbc:h2:mem:ordersdb
@@ -13,7 +14,7 @@ spring:
     show-sql: true
 
 kafka:
-  bootstrap-servers: localhost:9092
+  bootstrap-servers: ${KAFKASERVER}
   consumer:
     key-deserializer: org.apache.kafka.common.serialization.StringDeserializer
     value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
